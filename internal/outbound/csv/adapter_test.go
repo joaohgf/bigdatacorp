@@ -14,6 +14,7 @@ import (
 	"github.com/joaohgf/bigdatacorp/internal/usecase/domain"
 )
 
+// TestGenerateWritesRFC4180FilesWithConfiguredNames verifies CSV content and output-path behavior.
 func TestGenerateWritesRFC4180FilesWithConfiguredNames(t *testing.T) {
 	t.Parallel()
 	directory := t.TempDir()
@@ -47,6 +48,7 @@ func TestGenerateWritesRFC4180FilesWithConfiguredNames(t *testing.T) {
 	})
 }
 
+// TestGeneratePropagatesSequenceError verifies source errors stop artifact generation.
 func TestGeneratePropagatesSequenceError(t *testing.T) {
 	t.Parallel()
 	directory := t.TempDir()
@@ -61,6 +63,7 @@ func TestGeneratePropagatesSequenceError(t *testing.T) {
 	}
 }
 
+// sequence creates a successful in-memory club stream for adapter tests.
 func sequence(clubs ...*domain.Club) port.Sequence[*domain.Club] {
 	return func(yield func(*domain.Club, error) bool) {
 		for _, club := range clubs {
@@ -71,6 +74,7 @@ func sequence(clubs ...*domain.Club) port.Sequence[*domain.Club] {
 	}
 }
 
+// assertCSV compares all decoded CSV rows with the expected matrix.
 func assertCSV(t *testing.T, path string, want [][]string) {
 	t.Helper()
 	file, err := os.Open(path)

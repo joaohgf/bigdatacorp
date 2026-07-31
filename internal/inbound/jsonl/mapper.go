@@ -9,12 +9,15 @@ import (
 )
 
 type (
+	// ClubMapper converts JSONL club DTOs into domain clubs.
 	ClubMapper struct {
 		player port.ToMany[*Player, *domain.Player]
 	}
+	// PlayerMapper converts JSONL player DTOs into domain players.
 	PlayerMapper struct{}
 )
 
+// NewClubMapper creates a ClubMapper using playerMapper for nested players.
 func NewClubMapper(
 	playerMapper port.ToMany[*Player, *domain.Player],
 ) *ClubMapper {
@@ -23,10 +26,12 @@ func NewClubMapper(
 	return target
 }
 
+// NewPlayerMapper creates a PlayerMapper.
 func NewPlayerMapper() *PlayerMapper {
 	return new(PlayerMapper)
 }
 
+// To maps one JSONL club DTO to the domain.
 func (m *ClubMapper) To(source *Club) *domain.Club {
 	if source == nil {
 		return nil
@@ -53,6 +58,7 @@ func (m *ClubMapper) To(source *Club) *domain.Club {
 	return target
 }
 
+// ToMany maps multiple JSONL club DTOs to domain clubs.
 func (m *ClubMapper) ToMany(sources ...*Club) []*domain.Club {
 	targets := []*domain.Club{}
 	for _, source := range sources {
@@ -62,6 +68,7 @@ func (m *ClubMapper) ToMany(sources ...*Club) []*domain.Club {
 	return targets
 }
 
+// To maps one JSONL player DTO to the domain.
 func (m *PlayerMapper) To(source *Player) *domain.Player {
 	if source == nil {
 		return nil
@@ -82,6 +89,7 @@ func (m *PlayerMapper) To(source *Player) *domain.Player {
 	return target
 }
 
+// ToMany maps multiple JSONL player DTOs to domain players.
 func (m *PlayerMapper) ToMany(sources ...*Player) []*domain.Player {
 	targets := []*domain.Player{}
 	for _, source := range sources {

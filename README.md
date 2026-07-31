@@ -28,6 +28,32 @@ The input path is required. Missing or invalid inputs return a nonzero exit stat
 - Colors are joined with `|`.
 - CSV output is UTF-8 and escaped with Go's RFC 4180-compatible `encoding/csv` package.
 
+## Architecture
+
+The project follows a layered, ports-and-adapters architecture. Dependencies point toward the use case and domain, keeping transport and file-format concerns outside the business rules.
+
+```text
+cmd/cli or cmd/api
+        |
+        v
+inbound adapters (CLI, HTTP, JSONL)
+        |
+        v
+ports -> generation use case -> domain
+        |
+        v
+outbound CSV adapter
+```
+
+- `cmd/cli` and `cmd/api` are composition roots. They construct dependencies and select the inbound transport.
+- `internal/inbound` converts external input into application calls. The JSONL adapter reads lazily and its mappers only translate DTOs into domain objects.
+- `internal/usecase` owns business decisions. Championship, `club_id`, and `player_id` filtering happen here rather than in transport mappers.
+- `internal/usecase/domain` contains the representations shared by the business workflow without depending on CLI, HTTP, JSONL, or CSV packages.
+- `internal/port` defines the abstractions used to invert dependencies between the use case and adapters.
+- `internal/outbound/csv` streams accepted domain records into the required output files.
+
+The pipeline uses `iter.Seq2` from input through output. Each club is decoded, validated, mapped, and written before the next club is processed, so memory usage is bounded by the current JSONL record instead of the total file size. The HTTP API uses the same use case and adapters as the CLI; it only adds multipart handling, request-scoped temporary storage, and ZIP packaging.
+
 ## Large sample
 
 Generate an ignored 250,000-club fixture with four players per club:

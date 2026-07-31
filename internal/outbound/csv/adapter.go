@@ -14,11 +14,13 @@ import (
 	"github.com/joaohgf/bigdatacorp/internal/usecase/domain"
 )
 
+// CSV streams domain clubs into separate club and player CSV files.
 type CSV struct {
 	clubMapper   port.To[*domain.Club, []string]
 	playerMapper port.To[*domain.Club, [][]string]
 }
 
+// NewCSV creates a CSV generator with row mappers for clubs and players.
 func NewCSV(
 	clubMapper port.To[*domain.Club, []string],
 	playerMapper port.To[*domain.Club, [][]string],
@@ -29,6 +31,7 @@ func NewCSV(
 	return target
 }
 
+// Generate writes the source stream to CSV files and returns their descriptors.
 func (c *CSV) Generate(ctx context.Context, sources port.Sequence[*domain.Club]) ([]*domain.File, error) {
 	clubFile, playerFile := c.getFilesName(ctx)
 	clubFiler, err := os.Create(csvPath(clubFile.Name))
@@ -72,6 +75,7 @@ func (c *CSV) Generate(ctx context.Context, sources port.Sequence[*domain.Club])
 	return []*domain.File{clubFile, playerFile}, nil
 }
 
+// csvPath ensures name has a CSV extension.
 func csvPath(name string) string {
 	if strings.EqualFold(filepath.Ext(name), fmt.Sprintf(".%s", enum.CSVType)) {
 		return name
@@ -79,6 +83,7 @@ func csvPath(name string) string {
 	return fmt.Sprintf("%s.%s", name, enum.CSVType)
 }
 
+// writeHeaders writes the required club and player CSV schemas.
 func (c *CSV) writeHeaders(club, player *csv.Writer) error {
 	clubHeader := []string{"Id do Clube", "Nome", "Campeonato", "Data de Fundação", "Cidade",
 		"Estado", "País", "Estádio", "Presidente", "Apelido", "Cores"}
@@ -93,6 +98,7 @@ func (c *CSV) writeHeaders(club, player *csv.Writer) error {
 	return nil
 }
 
+// getFilesName resolves default or context-provided output paths.
 func (c *CSV) getFilesName(ctx context.Context) (*domain.File, *domain.File) {
 	clubFile := domain.NewFile()
 	clubFile.Name = string(enum.ClubFileName)

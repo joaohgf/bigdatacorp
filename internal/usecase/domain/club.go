@@ -6,6 +6,7 @@ import (
 	"github.com/joaohgf/bigdatacorp/internal/enum"
 )
 
+// Club represents a football club accepted by the business layer.
 type Club struct {
 	Titles       *int                  `json:"titles"`
 	ClubID       string                `json:"club_id"`
@@ -22,6 +23,7 @@ type Club struct {
 	Players      []*Player             `json:"players"`
 }
 
+// NewClub creates an empty Club.
 func NewClub() *Club {
 	return new(Club)
 }

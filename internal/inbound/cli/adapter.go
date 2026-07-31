@@ -10,11 +10,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// Handler adapts Cobra command arguments to the generation use case.
 type Handler struct {
 	decoder port.Decoder[*domain.Club]
 	usecase port.Usecase[*domain.Club, *domain.File]
 }
 
+// NewHandler creates a CLI Handler with its decoder and use case dependencies.
 func NewHandler(
 	decoder port.Decoder[*domain.Club],
 	usecase port.Usecase[*domain.Club, *domain.File],
@@ -25,6 +27,7 @@ func NewHandler(
 	return target
 }
 
+// Run decodes the requested input and invokes file generation.
 func (h *Handler) Run(cmd *cobra.Command, args []string) error {
 	input := NewCommandInput()
 	if len(args) > 0 {

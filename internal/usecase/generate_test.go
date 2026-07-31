@@ -9,10 +9,12 @@ import (
 	"github.com/joaohgf/bigdatacorp/internal/usecase/domain"
 )
 
+// collectingFiler records clubs received from the use case.
 type collectingFiler struct {
 	clubs []*domain.Club
 }
 
+// Generate collects every yielded club so tests can inspect use-case output.
 func (f *collectingFiler) Generate(_ context.Context, sources port.Sequence[*domain.Club]) ([]*domain.File, error) {
 	for source, err := range sources {
 		if err != nil {
@@ -23,6 +25,7 @@ func (f *collectingFiler) Generate(_ context.Context, sources port.Sequence[*dom
 	return nil, nil
 }
 
+// TestGenerateFiltersInvalidClubsAndPlayers verifies business validation at the use-case boundary.
 func TestGenerateFiltersInvalidClubsAndPlayers(t *testing.T) {
 	filer := new(collectingFiler)
 	target := NewGenerate(filer)

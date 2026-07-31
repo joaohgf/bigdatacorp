@@ -14,16 +14,19 @@ import (
 	"github.com/joaohgf/bigdatacorp/internal/port"
 )
 
+// JSONL streams newline-delimited JSON records and maps them to output values.
 type JSONL[I, O any] struct {
 	mapper port.To[I, O]
 }
 
+// NewJSONL creates a JSONL decoder backed by mapper.
 func NewJSONL[I, O any](mapper port.To[I, O]) *JSONL[I, O] {
 	target := new(JSONL[I, O])
 	target.mapper = mapper
 	return target
 }
 
+// Decode returns a lazy sequence over records in fileName.
 func (j *JSONL[I, O]) Decode(fileName string) port.Sequence[O] {
 	return func(yield func(O, error) bool) {
 		file, err := os.Open(j.getFileName(fileName))
@@ -57,6 +60,7 @@ func (j *JSONL[I, O]) Decode(fileName string) port.Sequence[O] {
 	}
 }
 
+// getFileName ensures the input path has a JSONL extension.
 func (j *JSONL[I, O]) getFileName(fileName string) string {
 	if !strings.HasSuffix(fileName, string(enum.JSONLType)) {
 		fileName = fmt.Sprintf("%s.%s", fileName, enum.JSONLType)

@@ -6,12 +6,15 @@ import (
 	"testing"
 )
 
+// identityMapper isolates decoder behavior by returning DTOs unchanged.
 type identityMapper struct{}
 
+// To returns the source DTO unchanged for decoder-focused tests.
 func (m *identityMapper) To(source *Club) *Club {
 	return source
 }
 
+// TestDecodeContinuesAfterMalformedAndNullRecords verifies line-level decoder resilience.
 func TestDecodeContinuesAfterMalformedAndNullRecords(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "input.jsonl")
 	content := "{\"club_id\":\"BEFORE\"}\n{broken\nnull\n{\"club_id\":\"AFTER\"}\n"

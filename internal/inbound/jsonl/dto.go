@@ -1,6 +1,7 @@
 package jsonl
 
 type (
+	// Club represents one club record as received from JSONL input.
 	Club struct {
 		Titles       *int      `json:"titles"`
 		ClubID       string    `json:"club_id"`
@@ -16,6 +17,7 @@ type (
 		Colors       []string  `json:"colors"`
 		Players      []*Player `json:"players"`
 	}
+	// Player represents one nested player record as received from JSONL input.
 	Player struct {
 		Age         *int   `json:"age"`
 		Goals       *int   `json:"goals"`
@@ -29,9 +31,12 @@ type (
 	}
 )
 
+// NewClub creates an empty JSONL Club DTO.
 func NewClub() *Club {
 	return new(Club)
 }
+
+// NewPlayer creates an empty JSONL Player DTO.
 func NewPlayer() *Player {
 	return new(Player)
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/joaohgf/bigdatacorp/internal/usecase/domain"
 )
 
+// TestOutputNameUsesDefaultsExtensionsAndBaseName verifies safe API output-name handling.
 func TestOutputNameUsesDefaultsExtensionsAndBaseName(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
@@ -43,6 +44,7 @@ func TestOutputNameUsesDefaultsExtensionsAndBaseName(t *testing.T) {
 	}
 }
 
+// TestCreateArchiveIncludesOnlyFileBaseNames verifies archive entries do not expose local paths.
 func TestCreateArchiveIncludesOnlyFileBaseNames(t *testing.T) {
 	t.Parallel()
 	directory := t.TempDir()
@@ -68,6 +70,7 @@ func TestCreateArchiveIncludesOnlyFileBaseNames(t *testing.T) {
 	}
 }
 
+// TestSaveUpload verifies the multipart file field is persisted unchanged.
 func TestSaveUpload(t *testing.T) {
 	t.Parallel()
 	body := new(bytes.Buffer)
@@ -104,6 +107,7 @@ func TestSaveUpload(t *testing.T) {
 	}
 }
 
+// TestSaveUploadRequiresFileField verifies missing uploads return a client error.
 func TestSaveUploadRequiresFileField(t *testing.T) {
 	t.Parallel()
 	body := new(bytes.Buffer)

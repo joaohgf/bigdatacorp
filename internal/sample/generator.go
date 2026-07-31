@@ -10,12 +10,15 @@ import (
 	jsonl "github.com/joaohgf/bigdatacorp/internal/inbound/jsonl"
 )
 
+// Generator creates deterministic JSONL fixtures containing valid and invalid records.
 type Generator struct{}
 
+// NewGenerator creates a sample Generator.
 func NewGenerator() *Generator {
 	return new(Generator)
 }
 
+// Generate writes a JSONL fixture with the requested club and player counts.
 func (g *Generator) Generate(ctx context.Context, path string, clubCount, playerCount int) error {
 	file, err := os.Create(path)
 	if err != nil {
@@ -53,6 +56,7 @@ func (g *Generator) Generate(ctx context.Context, path string, clubCount, player
 	return nil
 }
 
+// writeInvalidSamples appends malformed and incomplete records for robustness checks.
 func (g *Generator) writeInvalidSamples(writer *bufio.Writer) error {
 	lines := []string{
 		"{\"club_id\":\"BROKEN-SYNTAX\"\n",
@@ -69,6 +73,7 @@ func (g *Generator) writeInvalidSamples(writer *bufio.Writer) error {
 	return nil
 }
 
+// newClub creates a deterministic valid club fixture.
 func (g *Generator) newClub(index, playerCount int) *jsonl.Club {
 	nickname := fmt.Sprintf("Apelido %d", index)
 	championship := "SERIE A"
@@ -100,6 +105,7 @@ func (g *Generator) newClub(index, playerCount int) *jsonl.Club {
 	return target
 }
 
+// newPlayer creates a deterministic valid player fixture.
 func (g *Generator) newPlayer(clubIndex, position int) *jsonl.Player {
 	age, goals, shirt := 18+position, position-1, position
 	target := &jsonl.Player{

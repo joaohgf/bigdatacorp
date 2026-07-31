@@ -14,6 +14,7 @@ import (
 )
 
 // main starts cli process
+// main builds and executes the batch CLI.
 func main() {
 	cmd := buildRootCommand()
 	if err := cmd.Execute(); err != nil {
@@ -22,6 +23,7 @@ func main() {
 	}
 }
 
+// buildRootCommand wires CLI adapters and declares root command options.
 func buildRootCommand() *cobra.Command {
 	encoder := csv.NewCSV(csv.NewClubMapper(), csv.NewPlayerMapper())
 	usecase := usecase.NewGenerate(encoder)

@@ -15,6 +15,7 @@ const (
 	archiveOutputParam = "archive-output"
 )
 
+// outputName sanitizes a requested output name and applies its required extension.
 func outputName(c *gin.Context, parameter string, fallback enum.FileName, fileType enum.FileType) string {
 	name := filepath.Base(strings.TrimSpace(c.Query(parameter)))
 	if name == "." || name == "" {

@@ -10,6 +10,7 @@ import (
 	"github.com/joaohgf/bigdatacorp/internal/usecase/domain"
 )
 
+// createArchive packages generated files into one ZIP archive.
 func createArchive(path string, files []*domain.File) error {
 	archive, err := os.Create(path)
 	if err != nil {
@@ -33,6 +34,7 @@ func createArchive(path string, files []*domain.File) error {
 	return nil
 }
 
+// addToArchive copies one generated file into an archive using only its base name.
 func addToArchive(archive *zip.Writer, path string) error {
 	source, err := os.Open(path)
 	if err != nil {

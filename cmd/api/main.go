@@ -10,6 +10,7 @@ import (
 	"github.com/joaohgf/bigdatacorp/internal/usecase"
 )
 
+// main starts the HTTP API server.
 func main() {
 	router := buildEngine()
 	if err := router.Run(":8080"); err != nil {
@@ -17,6 +18,7 @@ func main() {
 	}
 }
 
+// buildEngine wires the HTTP transport and its application dependencies.
 func buildEngine() *gin.Engine {
 	engine := gin.Default()
 	group := engine.Group("/api/v1/")

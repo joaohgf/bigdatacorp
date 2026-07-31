@@ -12,11 +12,13 @@ import (
 	"github.com/joaohgf/bigdatacorp/internal/usecase/domain"
 )
 
+// Handler adapts multipart HTTP uploads to the generation use case.
 type Handler struct {
 	decoder port.Decoder[*domain.Club]
 	usecase port.Usecase[*domain.Club, *domain.File]
 }
 
+// NewHandler creates an HTTP Handler with its decoder and use case dependencies.
 func NewHandler(
 	decoder port.Decoder[*domain.Club],
 	usecase port.Usecase[*domain.Club, *domain.File],
@@ -27,6 +29,7 @@ func NewHandler(
 	return target
 }
 
+// Upload processes a JSONL upload and returns a ZIP archive containing both CSV files.
 func (h *Handler) Upload(c *gin.Context) {
 	workspace := c.GetString(workspaceKey)
 	inputPath := filepath.Join(workspace, "input.jsonl")

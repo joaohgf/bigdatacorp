@@ -9,18 +9,23 @@ import (
 )
 
 type (
-	ClubMapper   struct{}
+	// ClubMapper converts domain clubs into CSV rows.
+	ClubMapper struct{}
+	// PlayerMapper converts a domain club's players into CSV rows.
 	PlayerMapper struct{}
 )
 
+// NewClubMapper creates a CSV ClubMapper.
 func NewClubMapper() *ClubMapper {
 	return new(ClubMapper)
 }
 
+// NewPlayerMapper creates a CSV PlayerMapper.
 func NewPlayerMapper() *PlayerMapper {
 	return new(PlayerMapper)
 }
 
+// To maps one domain club to a CSV row.
 func (m *ClubMapper) To(source *domain.Club) []string {
 	target := []string{
 		source.ClubID, source.Name, string(source.Championship), "",
@@ -32,6 +37,7 @@ func (m *ClubMapper) To(source *domain.Club) []string {
 	return target
 }
 
+// ToMany maps domain clubs to CSV rows including the header.
 func (m *ClubMapper) ToMany(sources ...*domain.Club) [][]string {
 	targets := [][]string{
 		{"Id do Clube", "Nome", "Campeonato", "Data de Fundação", "Cidade",
@@ -44,6 +50,7 @@ func (m *ClubMapper) ToMany(sources ...*domain.Club) [][]string {
 	return targets
 }
 
+// To maps a domain club's players to CSV rows.
 func (m *PlayerMapper) To(source *domain.Club) [][]string {
 	targets := [][]string{}
 	for _, player := range source.Players {
@@ -66,6 +73,7 @@ func (m *PlayerMapper) To(source *domain.Club) [][]string {
 	return targets
 }
 
+// ToMany maps multiple clubs' players to CSV rows including the header.
 func (m *PlayerMapper) ToMany(sources ...*domain.Club) [][]string {
 	targets := [][]string{
 		{"Id do Clube", "Id do Jogador", "Nome", "Idade",

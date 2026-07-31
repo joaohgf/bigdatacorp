@@ -7,10 +7,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// SampleGenerator creates configurable JSONL fixtures for load testing.
 type SampleGenerator interface {
+	// Generate writes a fixture to path with the requested record counts.
 	Generate(context.Context, string, int, int) error
 }
 
+// NewSampleCommand creates the CLI subcommand for generating a large fixture.
 func NewSampleCommand(generator SampleGenerator) *cobra.Command {
 	var output string
 	var clubs int

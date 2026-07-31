@@ -10,6 +10,7 @@ import (
 
 const workspaceKey = "request-workspace"
 
+// Workspace creates and cleans up a request-scoped temporary directory.
 func Workspace(c *gin.Context) {
 	path, err := os.MkdirTemp("", "bigdatacorp-api-*")
 	if err != nil {

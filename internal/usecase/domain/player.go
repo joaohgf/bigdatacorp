@@ -2,6 +2,7 @@ package domain
 
 import "time"
 
+// Player represents a football player associated with a club.
 type Player struct {
 	Age         *int       `json:"age"`
 	Goals       *int       `json:"goals"`
@@ -14,6 +15,7 @@ type Player struct {
 	DebutDate   *time.Time `json:"debut_date"`
 }
 
+// NewPlayer creates an empty Player.
 func NewPlayer() *Player {
 	return new(Player)
 }

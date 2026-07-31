@@ -12,6 +12,7 @@ import (
 
 const maxUploadSize = int64(1 << 30)
 
+// saveUpload locates the multipart file field and persists it at path.
 func (h *Handler) saveUpload(c *gin.Context, path string) (int, error) {
 	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadSize)
 	reader, err := c.Request.MultipartReader()
@@ -34,6 +35,7 @@ func (h *Handler) saveUpload(c *gin.Context, path string) (int, error) {
 	}
 }
 
+// copyUpload streams an uploaded part into a local file.
 func copyUpload(source io.ReadCloser, path string) (int, error) {
 	defer source.Close()
 	target, err := os.Create(path)
@@ -51,6 +53,7 @@ func copyUpload(source io.ReadCloser, path string) (int, error) {
 	return 0, nil
 }
 
+// uploadErrorStatus maps upload failures to an HTTP response status.
 func uploadErrorStatus(err error) int {
 	var maxBytesError *http.MaxBytesError
 	if errors.As(err, &maxBytesError) {
