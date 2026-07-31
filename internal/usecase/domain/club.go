@@ -7,7 +7,7 @@ import (
 )
 
 type Club struct {
-	Titles       int                   `json:"title"`
+	Titles       *int                  `json:"titles"`
 	ClubID       string                `json:"club_id"`
 	Name         string                `json:"name"`
 	City         string                `json:"city"`
@@ -16,8 +16,8 @@ type Club struct {
 	Stadium      string                `json:"stadium"`
 	President    string                `json:"president"`
 	Nickname     string                `json:"nickname"`
-	FoundingDate time.Time             `json:"founding_date"`
 	Championship enum.ChampionshipType `json:"championship"`
+	FoundingDate *time.Time            `json:"founding_date"`
 	Colors       []string              `json:"colors"`
 	Players      []*Player             `json:"players"`
 }

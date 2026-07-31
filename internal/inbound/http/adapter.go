@@ -1,9 +1,10 @@
 package http
 
 import (
+	"context"
 	"fmt"
-	"io/fs"
 	"net/http"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joaohgf/bigdatacorp/internal/enum"
@@ -27,44 +28,27 @@ func NewHandler(
 }
 
 func (h *Handler) Upload(c *gin.Context) {
-	path, err := h.readFile(c)
+	workspace := c.GetString(workspaceKey)
+	inputPath := filepath.Join(workspace, "input.jsonl")
+	status, err := h.saveUpload(c, inputPath)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		c.JSON(status, gin.H{"error": err.Error()})
 		return
 	}
-	clubs, err := h.decoder.Decode(path)
+	clubName := outputName(c, clubsOutputParam, enum.ClubFileName, enum.CSVType)
+	playerName := outputName(c, playersOutputParam, enum.PlayerFileName, enum.CSVType)
+	archiveName := outputName(c, archiveOutputParam, enum.ArchiveFileName, enum.ZIPType)
+	ctx := context.WithValue(c.Request.Context(), enum.ClubFileName, filepath.Join(workspace, clubName))
+	ctx = context.WithValue(ctx, enum.PlayerFileName, filepath.Join(workspace, playerName))
+	files, err := h.usecase.Generate(ctx, h.decoder.Decode(inputPath))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": fmt.Sprintf("error decoding file: %s", err.Error()),
-		})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("generate CSV files: %s", err)})
 		return
 	}
-	files, err := h.usecase.Generate(c, clubs...)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+	archivePath := filepath.Join(workspace, archiveName)
+	if err := createArchive(archivePath, files); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("create result archive: %s", err)})
+		return
 	}
-	h.attachFile(c, files...)
-	c.JSON(http.StatusOK, nil)
-}
-
-func (h *Handler) readFile(c *gin.Context) (string, error) {
-	file, err := c.FormFile("file")
-	if err != nil {
-		return "", fmt.Errorf("error getting file: %s", err.Error())
-	}
-	path := fmt.Sprintf("./%s/%s", enum.UploadFileName, file.Filename)
-	if err = c.SaveUploadedFile(file, path, fs.ModePerm); err != nil {
-		return "", fmt.Errorf("error uploading file locally: %w", err)
-	}
-	return path, nil
-}
-
-func (h *Handler) attachFile(c *gin.Context, files ...*domain.File) {
-	for _, file := range files {
-		c.FileAttachment(file.Name, file.Name)
-	}
+	c.FileAttachment(archivePath, archiveName)
 }

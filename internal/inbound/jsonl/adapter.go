@@ -1,6 +1,8 @@
 package jsonl
 
 import (
+	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,35 +15,46 @@ import (
 )
 
 type JSONL[I, O any] struct {
-	mapper port.ToMany[I, O]
+	mapper port.To[I, O]
 }
 
-func NewJSONL[I, O any](mapper port.ToMany[I, O]) *JSONL[I, O] {
+func NewJSONL[I, O any](mapper port.To[I, O]) *JSONL[I, O] {
 	target := new(JSONL[I, O])
 	target.mapper = mapper
 	return target
 }
 
-func (j *JSONL[I, O]) Decode(fileName string) ([]O, error) {
-	file, err := os.Open(j.getFileName(fileName))
-	if err != nil {
-		return nil, fmt.Errorf("error opening file %s: %w", fileName, err)
-	}
-	decoder := json.NewDecoder(file)
-	targets := []I{}
-	for {
-		var target I
-		err := decoder.Decode(&target)
+func (j *JSONL[I, O]) Decode(fileName string) port.Sequence[O] {
+	return func(yield func(O, error) bool) {
+		file, err := os.Open(j.getFileName(fileName))
 		if err != nil {
-			if errors.Is(err, io.EOF) {
-				break
-			}
-			return nil, fmt.Errorf("error decoding jsonl file %s: %w", fileName, err)
+			var zero O
+			yield(zero, fmt.Errorf("error opening file %s: %w", fileName, err))
+			return
 		}
-		targets = append(targets, target)
+		defer file.Close()
+		reader := bufio.NewReader(file)
+		for lineNumber := 1; ; lineNumber++ {
+			line, readErr := reader.ReadBytes('\n')
+			line = bytes.TrimSpace(line)
+			if len(line) > 0 {
+				var source I
+				if err := json.Unmarshal(line, &source); err == nil {
+					if !yield(j.mapper.To(source), nil) {
+						return
+					}
+				}
+			}
+			if errors.Is(readErr, io.EOF) {
+				return
+			}
+			if readErr != nil {
+				var zero O
+				yield(zero, fmt.Errorf("read JSONL file %q at line %d: %w", fileName, lineNumber, readErr))
+				return
+			}
+		}
 	}
-	mapped := j.mapper.ToMany(targets...)
-	return mapped, nil
 }
 
 func (j *JSONL[I, O]) getFileName(fileName string) string {

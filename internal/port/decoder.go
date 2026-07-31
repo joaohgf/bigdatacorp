@@ -1,5 +1,10 @@
 package port
 
-type Decoder[D any] interface {
-	Decode(string) ([]D, error)
-}
+import "iter"
+
+type (
+	Sequence[T any] = iter.Seq2[T, error]
+	Decoder[D any]  interface {
+		Decode(string) Sequence[D]
+	}
+)

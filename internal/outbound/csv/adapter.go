@@ -3,8 +3,11 @@ package csv
 import (
 	"context"
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/joaohgf/bigdatacorp/internal/enum"
 	"github.com/joaohgf/bigdatacorp/internal/port"
@@ -12,13 +15,13 @@ import (
 )
 
 type CSV struct {
-	clubMapper   port.ToMany[*domain.Club, []string]
-	playerMapper port.ToMany[*domain.Club, []string]
+	clubMapper   port.To[*domain.Club, []string]
+	playerMapper port.To[*domain.Club, [][]string]
 }
 
 func NewCSV(
-	clubMapper port.ToMany[*domain.Club, []string],
-	playerMapper port.ToMany[*domain.Club, []string],
+	clubMapper port.To[*domain.Club, []string],
+	playerMapper port.To[*domain.Club, [][]string],
 ) *CSV {
 	target := new(CSV)
 	target.clubMapper = clubMapper
@@ -26,42 +29,67 @@ func NewCSV(
 	return target
 }
 
-func (c *CSV) Generate(ctx context.Context, sources ...*domain.Club) ([]*domain.File, error) {
+func (c *CSV) Generate(ctx context.Context, sources port.Sequence[*domain.Club]) ([]*domain.File, error) {
 	clubFile, playerFile := c.getFilesName(ctx)
-	err := c.createFiles(clubFile, playerFile, sources...)
+	clubFiler, err := os.Create(csvPath(clubFile.Name))
 	if err != nil {
+		return nil, fmt.Errorf("error generating %s file: %w", clubFile.Name, err)
+	}
+	defer clubFiler.Close()
+	playerFiler, err := os.Create(csvPath(playerFile.Name))
+	if err != nil {
+		return nil, fmt.Errorf("error generating %s file: %w", playerFile.Name, err)
+	}
+	defer playerFiler.Close()
+	clubWriter := csv.NewWriter(clubFiler)
+	playerWriter := csv.NewWriter(playerFiler)
+	if err := c.writeHeaders(clubWriter, playerWriter); err != nil {
 		return nil, err
 	}
-	files := []*domain.File{clubFile, playerFile}
-	return files, nil
+	for source, sourceErr := range sources {
+		if sourceErr != nil {
+			return nil, sourceErr
+		}
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		if err := clubWriter.Write(c.clubMapper.To(source)); err != nil {
+			return nil, fmt.Errorf("error writing club %s: %w", source.ClubID, err)
+		}
+		for _, player := range c.playerMapper.To(source) {
+			if err := playerWriter.Write(player); err != nil {
+				return nil, fmt.Errorf("error writing players from club %s: %w", source.ClubID, err)
+			}
+		}
+	}
+	clubWriter.Flush()
+	playerWriter.Flush()
+	if err := errors.Join(clubWriter.Error(), playerWriter.Error()); err != nil {
+		return nil, fmt.Errorf("error flushing CSV files: %w", err)
+	}
+	clubFile.Name = clubFiler.Name()
+	playerFile.Name = playerFiler.Name()
+	return []*domain.File{clubFile, playerFile}, nil
 }
 
-func (c *CSV) createFiles(club, player *domain.File, sources ...*domain.Club) error {
-	err := c.createFile(club, c.clubMapper, sources...)
-	if err != nil {
-		return err
+func csvPath(name string) string {
+	if strings.EqualFold(filepath.Ext(name), fmt.Sprintf(".%s", enum.CSVType)) {
+		return name
 	}
-	err = c.createFile(player, c.playerMapper, sources...)
-	return err
+	return fmt.Sprintf("%s.%s", name, enum.CSVType)
 }
 
-func (c *CSV) createFile(
-	file *domain.File,
-	mapper port.ToMany[*domain.Club, []string],
-	sources ...*domain.Club,
-) error {
-	filer, err := os.Create(fmt.Sprintf("%s.%s", file.Name, enum.CSVType))
-	if err != nil {
-		return fmt.Errorf("error genereting %s file: %w", file.Name, err)
+func (c *CSV) writeHeaders(club, player *csv.Writer) error {
+	clubHeader := []string{"Id do Clube", "Nome", "Campeonato", "Data de Fundação", "Cidade",
+		"Estado", "País", "Estádio", "Presidente", "Apelido", "Cores"}
+	playerHeader := []string{"Id do Clube", "Id do Jogador", "Nome", "Idade",
+		"Gols", "Data de Estreia", "Posição", "Número da Camisa"}
+	if err := club.Write(clubHeader); err != nil {
+		return fmt.Errorf("error writing clubs header: %w", err)
 	}
-	defer filer.Close()
-	writer := csv.NewWriter(filer)
-	defer writer.Flush()
-	mapped := mapper.ToMany(sources...)
-	if err = writer.WriteAll(mapped); err != nil {
-		return fmt.Errorf("error writing file %s: %w", file.Name, err)
+	if err := player.Write(playerHeader); err != nil {
+		return fmt.Errorf("error writing players header: %w", err)
 	}
-	file.Name = filer.Name()
 	return nil
 }
 

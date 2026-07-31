@@ -22,9 +22,13 @@ func NewPlayerMapper() *PlayerMapper {
 }
 
 func (m *ClubMapper) To(source *domain.Club) []string {
-	target := []string{source.ClubID, source.Name, string(source.Championship), source.FoundingDate.Format(time.DateOnly),
+	target := []string{
+		source.ClubID, source.Name, string(source.Championship), "",
 		source.City, source.State, source.Country, source.Stadium, source.President,
 		source.Nickname, strings.Join(source.Colors, "|")}
+	if source.FoundingDate != nil {
+		target[3] = source.FoundingDate.Format(time.DateOnly)
+	}
 	return target
 }
 
@@ -43,8 +47,20 @@ func (m *ClubMapper) ToMany(sources ...*domain.Club) [][]string {
 func (m *PlayerMapper) To(source *domain.Club) [][]string {
 	targets := [][]string{}
 	for _, player := range source.Players {
-		target := []string{source.ClubID, player.PlayerID, player.Name, fmt.Sprintf("%d", player.Age),
-			fmt.Sprintf("%d", player.Goals), player.DebutDate.Format(time.DateOnly), player.Position, fmt.Sprintf("%d", player.ShirtNumber)}
+		target := []string{source.ClubID, player.PlayerID, player.Name, "",
+			"", "", player.Position, ""}
+		if player.Age != nil {
+			target[3] = fmt.Sprintf("%d", *player.Age)
+		}
+		if player.Goals != nil {
+			target[4] = fmt.Sprintf("%d", *player.Goals)
+		}
+		if player.DebutDate != nil {
+			target[5] = player.DebutDate.Format(time.DateOnly)
+		}
+		if player.ShirtNumber != nil {
+			target[7] = fmt.Sprintf("%d", *player.ShirtNumber)
+		}
 		targets = append(targets, target)
 	}
 	return targets
@@ -52,7 +68,8 @@ func (m *PlayerMapper) To(source *domain.Club) [][]string {
 
 func (m *PlayerMapper) ToMany(sources ...*domain.Club) [][]string {
 	targets := [][]string{
-		{"Id do Clube", "Id do Jogador", "Nome", "Idade", "Gols", "Data de Estreia", "Posição", "Número da Camisa"},
+		{"Id do Clube", "Id do Jogador", "Nome", "Idade",
+			"Gols", "Data de Estreia", "Posição", "Número da Camisa"},
 	}
 	for _, source := range sources {
 		mapped := m.To(source)

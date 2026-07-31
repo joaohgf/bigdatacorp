@@ -28,6 +28,9 @@ func NewPlayerMapper() *PlayerMapper {
 }
 
 func (m *ClubMapper) To(source *Club) *domain.Club {
+	if source == nil {
+		return nil
+	}
 	target := domain.NewClub()
 	target.Titles = source.Titles
 	target.ClubID = source.ClubID
@@ -38,8 +41,10 @@ func (m *ClubMapper) To(source *Club) *domain.Club {
 	target.Country = source.Country
 	target.Stadium = source.Stadium
 	target.President = source.President
-	foundingDate, _ := time.Parse(time.DateOnly, source.FoundingDate)
-	target.FoundingDate = foundingDate
+	foundingDate, err := time.Parse(time.DateOnly, source.FoundingDate)
+	if err == nil {
+		target.FoundingDate = &foundingDate
+	}
 	if source.Nickname != nil {
 		target.Nickname = *source.Nickname
 	}
@@ -58,6 +63,9 @@ func (m *ClubMapper) ToMany(sources ...*Club) []*domain.Club {
 }
 
 func (m *PlayerMapper) To(source *Player) *domain.Player {
+	if source == nil {
+		return nil
+	}
 	target := domain.NewPlayer()
 	target.Age = source.Age
 	target.Goals = source.Goals
@@ -67,8 +75,10 @@ func (m *PlayerMapper) To(source *Player) *domain.Player {
 	target.Name = source.Name
 	target.Nationality = source.Nationality
 	target.Position = source.Position
-	debutDate, _ := time.Parse(time.DateOnly, source.DebutDate)
-	target.DebutDate = debutDate
+	debutDate, err := time.Parse(time.DateOnly, source.DebutDate)
+	if err == nil {
+		target.DebutDate = &debutDate
+	}
 	return target
 }
 

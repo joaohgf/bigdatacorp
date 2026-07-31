@@ -1,8 +1,10 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/joaohgf/bigdatacorp/internal/enum"
 	"github.com/joaohgf/bigdatacorp/internal/port"
 	"github.com/joaohgf/bigdatacorp/internal/usecase/domain"
 	"github.com/spf13/cobra"
@@ -28,12 +30,12 @@ func (h *Handler) Run(cmd *cobra.Command, args []string) error {
 	if len(args) > 0 {
 		input.FilePath = args[0]
 	}
-	clubs, err := h.decoder.Decode(input.FilePath)
-	if err != nil {
-		return fmt.Errorf("error decoding: %w", err)
-	}
-	_, err = h.usecase.Generate(cmd.Context(), clubs...)
-	if err != nil {
+	input.ClubOutput, _ = cmd.Flags().GetString(ClubOutputFlag)
+	input.PlayerOutput, _ = cmd.Flags().GetString(PlayerOutputFlag)
+	ctx := context.WithValue(cmd.Context(), enum.ClubFileName, input.ClubOutput)
+	ctx = context.WithValue(ctx, enum.PlayerFileName, input.PlayerOutput)
+	clubs := h.decoder.Decode(input.FilePath)
+	if _, err := h.usecase.Generate(ctx, clubs); err != nil {
 		return fmt.Errorf("error generating files: %w", err)
 	}
 	return nil

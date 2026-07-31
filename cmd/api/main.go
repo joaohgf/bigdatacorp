@@ -13,7 +13,7 @@ import (
 func main() {
 	router := buildEngine()
 	if err := router.Run(":8080"); err != nil {
-		log.Default().Println("error running server: %w", err)
+		log.Printf("error running server: %v", err)
 	}
 }
 
@@ -24,6 +24,6 @@ func buildEngine() *gin.Engine {
 	usecase := usecase.NewGenerate(encoder)
 	decoder := jsonl.NewJSONL(jsonl.NewClubMapper(jsonl.NewPlayerMapper()))
 	handler := http.NewHandler(decoder, usecase)
-	group.POST("upload", handler.Upload)
+	group.POST("upload", http.Workspace, handler.Upload)
 	return engine
 }

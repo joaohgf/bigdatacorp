@@ -9,17 +9,17 @@ type (
 )
 
 const (
-	SerieA                 ChampionshipType = "SERIEA"
-	SerieB                 ChampionshipType = "SERIEB"
-	UnkownChampionshipType                  = "UNKNOWN"
+	SerieA                  ChampionshipType = "SERIEA"
+	SerieB                  ChampionshipType = "SERIEB"
+	UnknownChampionshipType                  = "UNKNOWN"
 )
 
 func ChampionshipTypeOf(source string) ChampionshipType {
 	target := ChampionshipType(strings.ToUpper(strings.ReplaceAll(source, " ", "")))
 	switch target {
 	case SerieA, SerieB:
-		return target
+		return ChampionshipType(source)
 	default:
-		return UnkownChampionshipType
+		return UnknownChampionshipType
 	}
 }

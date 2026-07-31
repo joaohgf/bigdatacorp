@@ -2,7 +2,7 @@ package jsonl
 
 type (
 	Club struct {
-		Titles       int       `json:"title"`
+		Titles       *int      `json:"titles"`
 		ClubID       string    `json:"club_id"`
 		Name         string    `json:"name"`
 		Championship string    `json:"championship"`
@@ -17,10 +17,10 @@ type (
 		Players      []*Player `json:"players"`
 	}
 	Player struct {
-		Age         int    `json:"age"`
-		Goals       int    `json:"goals"`
-		ShirtNumber int    `json:"shirt_number"`
-		MarketValue int    `json:"makert_value"`
+		Age         *int   `json:"age"`
+		Goals       *int   `json:"goals"`
+		ShirtNumber *int   `json:"shirt_number"`
+		MarketValue *int   `json:"market_value"`
 		PlayerID    string `json:"player_id"`
 		Name        string `json:"name"`
 		Nationality string `json:"nationality"`

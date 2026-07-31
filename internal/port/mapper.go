@@ -1,8 +1,8 @@
 package port
 
 type (
-	From[I, O any] interface {
-		From(O) I
+	To[I, O any] interface {
+		To(I) O
 	}
 	ToMany[I, O any] interface {
 		ToMany(...I) []O
